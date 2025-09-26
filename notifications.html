@@ -114,7 +114,7 @@
 
       try {
         // ✅ get current user info first
-        const userRes = await fetch("http://localhost:4000/api/auth/me", {
+        const userRes = await fetch("https://new-eaor.onrender.com/api/auth/me", {
           headers: { "Authorization": `Bearer ${token}` }
         });
         const userData = await userRes.json();
@@ -126,8 +126,8 @@
 
         // ✅ choose endpoint based on role
         const endpoint = role === "owner"
-          ? "http://localhost:4000/api/bookings/owner"
-          : "http://localhost:4000/api/bookings/me";
+          ? "https://new-eaor.onrender.com/api/bookings/owner"
+          : "https://new-eaor.onrender.com/api/bookings/me";
 
         const res = await fetch(endpoint, {
           headers: { "Authorization": `Bearer ${token}` }
@@ -207,7 +207,7 @@
 
     async function loadMessages(bookingId) {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:4000/api/messages/${bookingId}`, {
+      const res = await fetch(`https://new-eaor.onrender.com/api/messages/${bookingId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const ct = res.headers.get('content-type') || '';
@@ -226,7 +226,7 @@
       if (!activeBookingId || !text) return;
 
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/api/messages", {
+      const res = await fetch("https://new-eaor.onrender.com/api/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -246,7 +246,7 @@
     async function updateBookingStatus(id, action) {
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch(`http://localhost:4000/api/bookings/${id}/${action}`, {
+        const res = await fetch(`https://new-eaor.onrender.com/api/bookings/${id}/${action}`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -270,5 +270,6 @@
   </script>
   <script src="script.js"></script>
 </body>
+
 
 </html>
