@@ -18,7 +18,7 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     const password = document.getElementById("login-password").value;
 
     try {
-        const res = await fetch("http://localhost:4000/api/auth/login", {
+        const res = await fetch("https://new-eaor.onrender.com/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -28,16 +28,8 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 
         if (res.ok) {
             alert("Login successful!");
-            // Store token (optional)
             localStorage.setItem("token", data.token);
-            window.location.href = "index.html"; // redirect after login
             handleLoginSuccess(data);
-
-            // if (data.user.email === "admin@quickrent.com") {
-            //     window.location.href = "admin.html"; // admin dashboard page
-            // } else {
-            //     window.location.href = "profile.html"; // regular user profile
-            // }
         } else {
             alert(data.message || "Login failed!");
         }
@@ -46,7 +38,6 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
         alert("Something went wrong!");
     }
 });
-
 
 // === SIGNUP FORM HANDLER ===
 document.getElementById("signup-form")?.addEventListener("submit", async (e) => {
@@ -60,7 +51,7 @@ document.getElementById("signup-form")?.addEventListener("submit", async (e) => 
     const company = document.getElementById("signup-company")?.value || null;
 
     try {
-        const res = await fetch("http://localhost:4000/api/auth/signup", {
+        const res = await fetch("https://new-eaor.onrender.com/api/auth/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, email, password, phone, role, company })
@@ -82,17 +73,13 @@ document.getElementById("signup-form")?.addEventListener("submit", async (e) => 
 
 // === Update UI after login ===
 function updateUserMenu(user) {
-    // Hide login/signup buttons
     document.querySelector(".auth-btn")?.style?.setProperty("display", "none");
 
-    // Show user menu
     const userMenu = document.querySelector(".user-menu");
     if (userMenu) userMenu.style.display = "block";
 
-    // Set username
     document.getElementById("username").textContent = user.name;
 
-    // If role = admin → show admin panel link
     const adminLink = document.getElementById("admin-link");
     if (adminLink) {
         if (user.type === "admin") {
@@ -102,16 +89,14 @@ function updateUserMenu(user) {
         }
     }
 
-    // ✅ If role = owner → show notifications link
     const notificationsLink = document.getElementById("notifications-link");
     if (notificationsLink) {
-        if (user.role === "owner","tenant") {
+        if (user.role === "owner" || user.role === "tenant") {
             notificationsLink.style.display = "block";
         } else {
             notificationsLink.style.display = "none";
         }
     }
-
 }
 
 // === Logout ===
@@ -119,7 +104,6 @@ function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    // Reset UI
     document.querySelector(".user-menu")?.style?.setProperty("display", "none");
     document.querySelector(".auth-btn")?.style?.setProperty("display", "block");
 
@@ -129,15 +113,17 @@ function logout() {
 
 // === After login success ===
 async function handleLoginSuccess(data) {
-    // Save token + user
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    // Update UI
     updateUserMenu(data.user);
 
-    // Redirect to profile or list
-    window.location.href = "list.html";
+    // Redirect user
+    if (data.user.email === "admin@quickrent.com" || data.user.isAdmin) {
+        window.location.href = "admin.html"; 
+    } else {
+        window.location.href = "profile.html"; 
+    }
 }
 
 // === Auto-load user menu if logged in ===
@@ -153,7 +139,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (!token) return;
 
     try {
-        const res = await fetch("http://localhost:4000/api/auth/me", {
+        const res = await fetch("https://new-eaor.onrender.com/api/auth/me", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -163,11 +149,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("username").textContent = user.name;
 
         if (user.email === "admin@quickrent.com" || user.isAdmin) {
-            // Hide Profile, show Admin Panel
             document.getElementById("profile-link").style.display = "none";
             document.getElementById("admin-link").style.display = "block";
         } else {
-            // Normal users: show profile, hide admin link
             document.getElementById("profile-link").style.display = "block";
             document.getElementById("admin-link").style.display = "none";
         }
@@ -176,4 +160,3 @@ window.addEventListener("DOMContentLoaded", async () => {
         console.error(err);
     }
 });
-
