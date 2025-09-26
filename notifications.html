@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickRent - Notifications</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <nav>
+    <h1>QuickRent</h1>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="browse.html">Browse Property</a>
+      <a href="list.html">List Property</a>
+      <a href="about.html">About</a>
+      <div class="auth-btn">
+        <button onclick="goToLoginPage('login')" class="primary-btn login">Login</button>
+        <button onclick="goToLoginPage('signup')" class="primary-btn signUp">Sign Up</button>
+      </div>
+      <div class="user-menu" style="display: none;">
+        <div class="dropdown">
+          <button class="dropdown-btn">
+            <i class="fas fa-user"></i> <span id="username"></span>
+          </button>
+          <div class="dropdown-content">
+            <a href="profile.html" id="profile-link">Profile</a>
+            <a href="notifications.html" id="notifications-link" style="display: none;">Notifications</a>
+            <a href="admin.html" id="admin-link" style="display: none;">Admin Panel</a>
+            <a href="#" onclick="logout()">Logout</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+  <section class="notifications-container" style="padding: 2rem;">
+    <h2>Your Notifications</h2>
+    <div id="notifications-list">
+      <p>Loading notifications...</p>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="modal" style="display:none; align-items:center; justify-content:center;">
+      <div class="modal-content" style="max-width:520px; width:92%;">
+        <span class="close" onclick="closeChatModal()">&times;</span>
+        <h3>Chat</h3>
+        <div id="chat-messages" style="max-height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+        <form id="chat-form">
+          <input type="text" id="chat-input" placeholder="Type a message..." required />
+          <button type="submit" class="primary-btn btn-primary">Send</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  
+  
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>QuickRent</h3>
+        <p>Find verified homes for students and professionals with ease.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="browse.html">Browse</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <ul>
+          <li><i class="fas fa-envelope"></i> support@quickrent.com</li>
+          <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+          <li><i class="fas fa-map-marker-alt"></i> Mumbai, India</li>
+        </ul>
+      </div>
+      <div class="footer-social">
+        <h4>Follow Us</h4>
+        <div class="social-icons">
+          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2025</span> QuickRent. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script>
+    let activeBookingId = null;
+    let chatInterval = null;
+
+    async function loadNotifications() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        document.getElementById("notifications-list").innerHTML = "<p>Please log in.</p>";
+        return;
+      }
+
+      try {
+        // ✅ get current user info first
+        const userRes = await fetch("http://localhost:4000/api/auth/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const userData = await userRes.json();
+        if (!userRes.ok) {
+          document.getElementById("notifications-list").innerHTML = "<p>Unable to load user info.</p>";
+          return;
+        }
+        const role = userData.user.role;
+
+        // ✅ choose endpoint based on role
+        const endpoint = role === "owner"
+          ? "http://localhost:4000/api/bookings/owner"
+          : "http://localhost:4000/api/bookings/me";
+
+        const res = await fetch(endpoint, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const text = await res.text();
+          throw new Error(`Unexpected response (${res.status}). Body: ${text.slice(0,200)}`);
+        }
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById("notifications-list").innerHTML = `<p>${data.message}</p>`;
+          return;
+        }
+
+        if (!Array.isArray(data.bookings) || data.bookings.length === 0) {
+          document.getElementById("notifications-list").innerHTML = "<p>No bookings yet.</p>";
+          return;
+        }
+
+        // ✅ display differently for tenant/owner and include counterpart info
+        document.getElementById("notifications-list").innerHTML = data.bookings.map(b => `
+          <div class="notification-card">
+            <p>
+              ${role === "owner"
+            ? `<strong>${b.tenant?.name || 'Someone'}</strong> requested to book <strong>${b.property?.title || 'the property'}</strong>`
+            : `You booked <strong>${b.property?.title || 'the property'}</strong> from <strong>${b.property?.owner?.name || 'Owner'}</strong>`}
+            </p>
+            <p>From ${b.startDate ? new Date(b.startDate).toLocaleDateString() : '-'} to ${b.endDate ? new Date(b.endDate).toLocaleDateString() : '-'}</p>
+            <p>Message: ${b.message || "No message"}</p>
+            <p>Status: ${b.status}</p>
+            ${role === "owner" ? `<p>Tenant: <strong>${b.tenant?.name || '-'}</strong> (${b.tenant?.email || '-'})</p>` : `<p>Owner: <strong>${b.property?.owner?.name || '-'}</strong> (${b.property?.owner?.email || '-'})</p>`}
+            ${role === 'owner' ? `
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button class="btn-approve" onclick="updateBookingStatus('${b._id}','approve')">Accept</button>
+                <button class="btn-reject" onclick="updateBookingStatus('${b._id}','reject')">Reject</button>
+              </div>
+            ` : ''}
+            ${b.status === 'confirmed' ? `<button onclick="openChat('${b._id}')" class=" btn-primary">Open Chat</button>` : ''}
+          </div>
+        `).join("");
+
+        // ✅ update notification badge if present
+        try {
+          const badge = document.getElementById("notif-badge");
+          if (badge) {
+            const count = data.bookings.length;
+            if (count > 0) {
+              badge.innerText = String(count);
+              badge.style.display = "inline-block";
+            } else {
+              badge.style.display = "none";
+            }
+          }
+        } catch {}
+      } catch (err) {
+        console.error(err);
+        document.getElementById("notifications-list").innerHTML = "<p>Error loading notifications.</p>";
+      }
+    }
+
+    function openChat(bookingId) {
+      activeBookingId = bookingId;
+      document.getElementById("chat-modal").style.display = "";
+      loadMessages(bookingId);
+      chatInterval = setInterval(() => loadMessages(bookingId), 3000);
+
+    }
+
+    function closeChatModal() {
+      document.getElementById("chat-modal").style.display = "none";
+      document.getElementById("chat-messages").innerHTML = "";
+      activeBookingId = null;
+      clearInterval(chatInterval);
+    }
+
+    async function loadMessages(bookingId) {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:4000/api/messages/${bookingId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) return;
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById("chat-messages").innerHTML = data.messages.map(m => `
+          <div><strong>${m.sender.name}:</strong> ${m.text}</div>
+        `).join("");
+      }
+    }
+
+    document.getElementById("chat-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = document.getElementById("chat-input").value;
+      if (!activeBookingId || !text) return;
+
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:4000/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ bookingId: activeBookingId, text })
+      });
+
+      if (res.ok) {
+        document.getElementById("chat-input").value = "";
+        loadMessages(activeBookingId);
+      }
+    });
+
+    loadNotifications();
+
+    async function updateBookingStatus(id, action) {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`http://localhost:4000/api/bookings/${id}/${action}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const text = await res.text();
+          throw new Error(`Unexpected response (${res.status}). Body: ${text.slice(0,200)}`);
+        }
+        const data = await res.json();
+        if (res.ok) {
+          alert(data.message);
+          loadNotifications();
+        } else {
+          alert(data.message || 'Failed to update booking');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error updating booking');
+      }
+    }
+  </script>
+  <script src="script.js"></script>
+</body>
+
+</html>

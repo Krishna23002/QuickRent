@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickRent - Browse Property</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <h1>QuickRent</h1>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse Property</a>
+            <a href="list.html">List Property</a>
+            <a href="about.html">About</a>
+            <div class="auth-btn">
+                <button onclick="goToLoginPage('login')" class="primary-btn login">Login</button>
+                <button onclick="goToLoginPage('signup')" class="primary-btn signUp">Sign Up</button>
+            </div>
+            <div class="user-menu" style="display: none;">
+                <div class="dropdown">
+                    <button class="dropdown-btn">
+                        <i class="fas fa-user"></i> <span id="username"></span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="profile.html" id="profile-link">Profile</a>
+                        <a href="notifications.html" id="notifications-link" style="display: none;">Notifications</a>
+                        <a href="admin.html" id="admin-link" style="display: none;">Admin Panel</a>
+                        <a href="#" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <!-- Browse Properties Page -->
+        <div id="browse-page" class="page">
+            <div class="container">
+                <h2>Browse Properties</h2>
+                <div class="filters-container">
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <label>Location</label>
+                            <select id="location-filter" onchange="filterProperties()">
+                                <option value="">All Locations</option>
+                                <option value="bandra">Bandra</option>
+                                <option value="juhu">Juhu</option>
+                                <option value="andheri">Andheri</option>
+                                <option value="vile-parle">Vile Parle</option>
+                                <option value="kandivali">Kandivali</option>
+                                <option value="borivali">Borivali</option>
+                                <option value="malad">Malad</option>
+                                <option value="santacruz">Santacruz</option>
+                                <option value="sewri">Sewri</option>
+                                <option value="thane">Thane</option>
+                                <option value="navi-mumbai">Navi Mumbai</option>
+                                <option value="pune">Pune</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Property Type</label>
+                            <select id="type-filter" onchange="filterProperties()">
+                                <option value="">All Types</option>
+                                <option value="apartment">Apartment</option>
+                                <option value="house">House</option>
+                                <option value="room">Single Room</option>
+                                <option value="studio">Studio</option>
+                                <option value="condo">Condo</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Price Range</label>
+                            <select id="price-filter" onchange="filterProperties()">
+                                <option value="">All Prices</option>
+                                <option value="0-15000">₹0 - ₹15,000</option>
+                                <option value="15000-30000">₹15,000 - ₹30,000</option>
+                                <option value="30000-50000">₹30,000 - ₹50,000</option>
+                                <option value="50000+">₹50,000+</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Bedrooms</label>
+                            <select id="bedroom-filter" onchange="filterProperties()">
+                                <option value="">Any</option>
+                                <option value="1">1+ Bed</option>
+                                <option value="2">2+ Beds</option>
+                                <option value="3">3+ Beds</option>
+                                <option value="4">4+ Beds</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Roommate Required</label>
+                            <select id="roommate-filter" onchange="filterProperties()">
+                                <option value="">Any</option>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Sort By</label>
+                            <select id="sort-filter" onchange="filterProperties()">
+                                <option value="newest">Newest First</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="bedrooms">Most Bedrooms</option>
+                            </select>
+                        </div>
+                        <button class="btn-secondary filter-reset" onclick="resetFilters()">
+                            <i class="fas fa-rotate-right"></i> Reset
+                        </button>
+                    </div>
+                    <div class="amenity-filters">
+                        <label class="amenity-label">Amenities:</label>
+                        <div class="amenity-checkboxes">
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="wifi" onchange="filterProperties()"> WiFi
+                            </label>
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="parking" onchange="filterProperties()"> Parking
+                            </label>
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="laundry" onchange="filterProperties()"> Laundry
+                            </label>
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="gym" onchange="filterProperties()"> Gym
+                            </label>
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="pool" onchange="filterProperties()"> Pool
+                            </label>
+                            <label class="amenity-checkbox">
+                                <input type="checkbox" value="ac" onchange="filterProperties()"> A/C
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="browse-header">
+                    <div class="results-info">
+                        <span id="results-count">0 properties found</span>
+                    </div>
+                    <div class="view-options">
+                        <button class="view-btn active" onclick="setView('grid')" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-btn" onclick="setView('list')" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" onclick="setView('map')" data-view="map">
+                            <i class="fas fa-map"></i> Map
+                        </button>
+                        <button class="btn-secondary" onclick="showBudgetRooms()">
+                            <i class="fas fa-coins"></i> Budget Rooms
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Budget Rooms Section -->
+                <div id="budget-rooms-section" class="budget-section" style="display: none;">
+                    <h3 style="padding: 2rem 0;"><i class="fas fa-coins"></i> Budget-Friendly Options (Under ₹15000/month)</h3>
+                    <div class="properties-grid" id="budget-properties-list">
+                        <!-- Budget properties will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Map View Section -->
+                <div id="map-view-section" class="map-section" style="display: none;">
+                    <div class="map-container">
+                        <div id="property-map"
+                            style="height: 500px; border-radius: 12px; border: 2px solid var(--border-color); position: relative;">
+                            <!-- Real map will be loaded here -->
+                        </div>
+                        <div id="map-properties-list" style="margin-top: 20px;">
+                            <!-- Map properties will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-bar" id="comparison-bar" style="display: none;">
+                    <div class="comparison-content">
+                        <span id="comparison-count">0 properties selected</span>
+                        <button class="btn-primary" onclick="showComparison()">Compare Properties</button>
+                        <button class="btn-secondary" onclick="clearComparison()">Clear All</button>
+                    </div>
+                </div>
+
+                <div class="properties-container">
+                    <div class="properties-grid" id="browse-properties-list">
+                        <!-- Properties will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Compare Modal -->
+                <div id="compare-modal" class="modal" style="display:none;">
+                    <div class="modal-content compare-content">
+                        <span class="close" onclick="closeCompareModal()">&times;</span>
+                        <h3>Compare Properties</h3>
+                        <div id="compare-table-wrapper" style="overflow:auto;">
+                            <table id="compare-table" style="width:100%; border-collapse:collapse;"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>QuickRent</h3>
+                <p>Find verified homes for students and professionals with ease.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="browse.html">Browse</a></li>
+                    <li><a href="#" onclick="showPage('signup')">Sign Up</a></li>
+                    <li><a href="#" onclick="showPage('login')">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> support@quickrent.com</li>
+                    <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Mumbai, India</li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Follow Us</h4>
+                <div class="social-icons">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="year">2025</span> QuickRent. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <div id="booking-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeBookingModal()">&times;</span>
+            <h3>Book Property</h3>
+            <form id="booking-form">
+                <label>Start Date:</label>
+                <input type="date" id="start-date" required>
+
+                <label>End Date:</label>
+                <input type="date" id="end-date" required>
+
+                <label>Message to Owner:</label>
+                <textarea id="message" placeholder="Optional message"></textarea>
+
+                <button type="submit" class="btn-primary">Book</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // script.js
+
+        // Global variables
+        let allProperties = [];
+        let filteredProperties = [];
+        let currentView = 'grid';
+        let selectedProperties = [];
+        let selectedPropertyId = null;
+
+        // Load properties on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadProperties();
+
+            const params = new URLSearchParams(window.location.search);
+            const q = (params.get('q') || '').trim().toLowerCase();
+            if (q) {
+                filteredProperties = allProperties.filter(p => {
+                    const hay = [p.title, p.type, p.address, p.city, p.state, (p.amenities||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
+                    return hay.includes(q);
+                });
+                // Remove query from URL so refresh shows original properties
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, document.title, 'browse.html');
+                }
+            } else {
+                filteredProperties = [...allProperties];
+            }
+
+            displayProperties();
+            updateResultsCount();
+        });
+
+        // Fetch properties from backend
+        async function loadProperties() {
+            try {
+                const response = await fetch('http://localhost:4000/api/properties');
+                const data = await response.json();
+
+                if (response.ok) {
+                    allProperties = (data.properties || []).filter(p => p.status === 'approved');
+                    filteredProperties = [...allProperties];
+                    displayProperties();
+                    updateResultsCount();
+                } else {
+                    console.error('Failed to load properties:', data.message);
+                    document.getElementById('browse-properties-list').innerHTML =
+                        '<div class="no-properties">No properties available at the moment.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading properties:', error);
+                document.getElementById('browse-properties-list').innerHTML =
+                    '<div class="no-properties">Error loading properties. Please try again later.</div>';
+            }
+        }
+
+        function displayProperties() {
+            const container = document.getElementById('browse-properties-list');
+            const user = JSON.parse(localStorage.getItem("currentUser"));
+
+            if (filteredProperties.length === 0) {
+                container.innerHTML = '<div class="no-properties">No properties match your filters.</div>';
+                return;
+            }
+
+            container.innerHTML = filteredProperties.map(property => `
+        <div class="property-card" data-property-id="${property._id}">
+            <div class="property-image">
+                <img src="http://localhost:4000${property.images?.[0] || ''}" 
+     alt="${property.title}" 
+     onerror="this.src='images/1.avif'">
+
+                <div class="property-badge">${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</div>
+                <button class="compare-btn" onclick="toggleCompare('${property._id}')">
+                    <i class="fas fa-balance-scale"></i>
+                </button>
+            </div>
+            <div class="property-info">
+                <h3>${property.title}</h3>
+                <p class="property-location"><i class="fas fa-map-marker-alt"></i> ${(property.city || property.state || property.address || '').toString()}</p>
+                <div class="property-details">
+                    <span><i class="fas fa-bed"></i> ${property.bedrooms} bed</span>
+                    <span><i class="fas fa-bath"></i> ${property.bathrooms} bath</span>
+                    <span><i class="fas fa-home"></i> ${property.type}</span>
+                </div>
+                <div class="property-amenities">
+                    ${property.amenities?.slice(0, 3).map(amenity =>
+                `<span class="amenity-tag">${amenity}</span>`).join('') || ''}
+                </div>
+                <div class="property-footer">
+                    <div class="property-price">
+                        <span class="price">₹${property.price.toLocaleString()}</span>
+                        <span class="period">/month</span>
+                    </div>
+                    <div class="property-actions">
+                        ${property.roommateRequired ? '<span class="amenity-tag" title="Roommate required">Roommate</span>' : ''}
+                        <button class="btn-primary" onclick="viewProperty('${property._id}')">View Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+        }
+
+
+
+        // Filtering
+        function filterProperties() {
+            const locationFilter = document.getElementById('location-filter').value.toLowerCase();
+            const typeFilter = document.getElementById('type-filter').value.toLowerCase();
+            const priceFilter = document.getElementById('price-filter').value;
+            const bedroomFilter = document.getElementById('bedroom-filter').value;
+            const sortFilter = document.getElementById('sort-filter').value;
+            const roommateFilter = document.getElementById('roommate-filter')?.value;
+
+            const selectedAmenities = Array.from(document.querySelectorAll('.amenity-checkboxes input:checked'))
+                .map(input => input.value);
+
+            filteredProperties = allProperties.filter(property => {
+                if (locationFilter) {
+                    const hay = [property.city, property.state, property.address].filter(Boolean).join(' ').toLowerCase();
+                    if (!hay.includes(locationFilter)) return false;
+                }
+                if (typeFilter && property.type !== typeFilter) return false;
+
+                if (priceFilter) {
+                    const [min, max] = priceFilter.split('-').map(p => parseInt(p.replace(/[^\d]/g, '')));
+                    if (max && (property.price < min || property.price > max)) return false;
+                    if (!max && property.price < min) return false;
+                }
+
+                if (bedroomFilter && property.bedrooms < parseInt(bedroomFilter)) return false;
+
+                if (selectedAmenities.length > 0) {
+                    if (!selectedAmenities.every(amenity => property.amenities?.includes(amenity))) return false;
+                }
+                if (roommateFilter === 'true' && property.roommateRequired !== true) return false;
+                if (roommateFilter === 'false' && property.roommateRequired === true) return false;
+
+                return true;
+            });
+
+            switch (sortFilter) {
+                case 'price-low': filteredProperties.sort((a, b) => a.price - b.price); break;
+                case 'price-high': filteredProperties.sort((a, b) => b.price - a.price); break;
+                case 'bedrooms': filteredProperties.sort((a, b) => b.bedrooms - a.bedrooms); break;
+                case 'newest': default: filteredProperties.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); break;
+            }
+
+            displayProperties();
+            updateResultsCount();
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('location-filter').value = '';
+            document.getElementById('type-filter').value = '';
+            document.getElementById('price-filter').value = '';
+            document.getElementById('bedroom-filter').value = '';
+            document.getElementById('sort-filter').value = 'newest';
+            document.querySelectorAll('.amenity-checkboxes input').forEach(input => input.checked = false);
+
+            filteredProperties = [...allProperties];
+            displayProperties();
+            updateResultsCount();
+        }
+
+        // Update results count
+        function updateResultsCount() {
+            const count = filteredProperties.length;
+            document.getElementById('results-count').textContent = `${count} propert${count === 1 ? 'y' : 'ies'} found`;
+        }
+
+        // View property details
+        function viewProperty(propertyId) {
+            // Redirect to property detail page
+            window.location.href = `property.html?id=${propertyId}`;
+        }
+
+
+        // Comparison
+        function toggleCompare(propertyId) {
+            const index = selectedProperties.indexOf(propertyId);
+            if (index > -1) selectedProperties.splice(index, 1);
+            else {
+                if (selectedProperties.length >= 3) { alert('You can compare up to 3 properties.'); return; }
+                selectedProperties.push(propertyId);
+            }
+            updateComparisonBar();
+            updateCompareButtons();
+            // Auto open compare when 2 or more selected; close if fewer than 2
+            const modal = document.getElementById('compare-modal');
+            if (selectedProperties.length >= 2) {
+                openCompareModal();
+            } else if (modal && modal.style.display !== 'none') {
+                closeCompareModal();
+            }
+        }
+
+        function updateComparisonBar() {
+            const bar = document.getElementById('comparison-bar');
+            const count = document.getElementById('comparison-count');
+
+            if (selectedProperties.length > 0) {
+                bar.style.display = 'block';
+                count.textContent = `${selectedProperties.length} propert${selectedProperties.length === 1 ? 'y' : 'ies'} selected`;
+            } else bar.style.display = 'none';
+        }
+
+        function updateCompareButtons() {
+            document.querySelectorAll('.compare-btn').forEach(btn => {
+                const propertyId = btn.closest('.property-card').dataset.propertyId;
+                btn.classList.toggle('selected', selectedProperties.includes(propertyId));
+            });
+        }
+
+        function showComparison() {
+            if (selectedProperties.length < 2) { alert('Select at least 2 properties to compare.'); return; }
+            openCompareModal();
+        }
+
+        function clearComparison() {
+            selectedProperties = [];
+            updateComparisonBar();
+            updateCompareButtons();
+        }
+
+        function openCompareModal() {
+            const modal = document.getElementById('compare-modal');
+            const table = document.getElementById('compare-table');
+            const properties = selectedProperties.map(id => allProperties.find(p => p._id === id)).filter(Boolean);
+
+            if (properties.length < 2) { alert('Select at least 2 properties to compare.'); return; }
+
+            const rows = [];
+            const fields = [
+                { label: 'Preview', render: p => `<img src="http://localhost:4000${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='images/1.avif'">` },
+                { label: 'Title', render: p => p.title || '' },
+                { label: 'Price (/month)', render: p => `₹${Number(p.price||0).toLocaleString()}` },
+                { label: 'Type', render: p => p.type || '' },
+                { label: 'Bedrooms', render: p => p.bedrooms ?? '' },
+                { label: 'Bathrooms', render: p => p.bathrooms ?? '' },
+                { label: 'Floor', render: p => p.floor ?? '' },
+                { label: 'Total Floors', render: p => p.totalFloors ?? '' },
+                { label: 'Facing', render: p => p.facing || '' },
+                { label: 'Location', render: p => [p.city, p.state, p.pincode].filter(Boolean).join(', ') || p.address || '' },
+                { label: 'Amenities', render: p => Array.isArray(p.amenities) ? p.amenities.join(', ') : '' },
+                { label: 'Roommate Required', render: p => p.roommateRequired ? 'Yes' : 'No' },
+                { label: 'Description', render: p => p.description || '' },
+            ];
+
+            rows.push(`<tr><th style="width:180px;text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;"></th>` +
+                properties.map(() => `<th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;"></th>`).join('') + `</tr>`);
+
+            fields.forEach(f => {
+                const cells = properties.map(p => `<td style="padding:10px;vertical-align:top;border-bottom:1px solid #f1f5f9;">${f.render(p)}</td>`).join('');
+                rows.push(`<tr><th style="text-align:left;padding:10px;color:#334155;background:#f9fafb;border-bottom:1px solid #e5e7eb;">${f.label}</th>${cells}</tr>`);
+            });
+
+            table.innerHTML = rows.join('');
+            modal.style.display = 'flex';
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compare-modal').style.display = 'none';
+        }
+
+        // Views
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.querySelector(`[data-view="${view}"]`);
+            if (btn) btn.classList.add('active');
+
+            if (view === 'map') showMapView();
+            else if (view === 'list') showListView();
+            else showGridView();
+        }
+
+        function showGridView() {
+            document.getElementById('map-view-section').style.display = 'none';
+            document.getElementById('budget-rooms-section').style.display = 'none';
+            document.querySelector('.properties-container').style.display = 'block';
+            const grid = document.getElementById('browse-properties-list');
+            grid.classList.remove('list-view');
+        }
+
+        function showMapView() {
+            document.getElementById('map-view-section').style.display = 'block';
+            document.getElementById('budget-rooms-section').style.display = 'none';
+            document.querySelector('.properties-container').style.display = 'none';
+
+            document.getElementById('property-map').innerHTML =
+                '<div id="leaflet-map" style="height:100%; width:100%;"></div>';
+
+            initLeafletMap();
+        }
+
+        let leafletMap;
+        function initLeafletMap() {
+            if (leafletMap) {
+                leafletMap.invalidateSize();
+                return;
+            }
+
+            leafletMap = L.map('leaflet-map');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(leafletMap);
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const here = [lat, lng];
+                    leafletMap.setView(here, 13);
+                    L.marker(here).addTo(leafletMap).bindPopup('You are here');
+                    plotNearbyProperties(here);
+                }, () => {
+                    // Fallback center
+                    const fallback = [20.5937, 78.9629];
+                    leafletMap.setView(fallback, 5);
+                    plotNearbyProperties(null);
+                });
+            } else {
+                const fallback = [20.5937, 78.9629];
+                leafletMap.setView(fallback, 5);
+                plotNearbyProperties(null);
+            }
+        }
+
+        function plotNearbyProperties(centerLatLng) {
+            const maxDistanceKm = 25; // client-side filter radius
+            const props = allProperties.filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number');
+
+            props.forEach(p => {
+                const marker = L.marker([p.latitude, p.longitude]).addTo(leafletMap);
+                const html = `
+                    <div style="min-width:180px;">
+                        <strong>${p.title}</strong><br/>
+                        ₹${Number(p.price||0).toLocaleString()}/month<br/>
+                        <a href="property.html?id=${p._id}">View</a>
+                    </div>
+                `;
+                marker.bindPopup(html);
+            });
+
+            if (centerLatLng) {
+                // Optionally filter by distance
+                const toKm = (a, b) => {
+                    const R = 6371;
+                    const dLat = (b[0]-a[0]) * Math.PI/180;
+                    const dLon = (b[1]-a[1]) * Math.PI/180;
+                    const lat1 = a[0]*Math.PI/180;
+                    const lat2 = b[0]*Math.PI/180;
+                    const x = Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1) * Math.cos(lat2);
+                    return 2 * R * Math.asin(Math.sqrt(x));
+                };
+
+                // Zoom to bounds of nearby properties
+                const nearby = props.filter(p => toKm(centerLatLng, [p.latitude, p.longitude]) <= maxDistanceKm);
+                if (nearby.length > 0) {
+                    const bounds = L.latLngBounds(nearby.map(p => [p.latitude, p.longitude]).concat([centerLatLng]));
+                    leafletMap.fitBounds(bounds.pad(0.2));
+                }
+            }
+        }
+
+        function showListView() {
+            document.getElementById('map-view-section').style.display = 'none';
+            document.getElementById('budget-rooms-section').style.display = 'none';
+            document.querySelector('.properties-container').style.display = 'block';
+            const grid = document.getElementById('browse-properties-list');
+            grid.classList.add('list-view');
+        }
+
+        // Budget rooms
+        function showBudgetRooms() {
+            const budgetThreshold = 15000;
+            const budgetProperties = allProperties.filter(p => Number(p.price) < budgetThreshold).sort((a,b)=>Number(a.price)-Number(b.price));
+
+            document.getElementById('budget-properties-list').innerHTML =
+                budgetProperties.length > 0
+                    ? budgetProperties.map(property => `
+                <div class="property-card">
+                    <div class="property-image">
+                        <img src="http://localhost:4000${property.images?.[0] || ''}" alt="${property.title}" onerror="this.src='images/1.avif'">
+                        <div class="property-badge">Budget</div>
+                    </div>
+                    <div class="property-info">
+                        <h3>${property.title}</h3>
+                        <p class="property-location"><i class="fas fa-map-marker-alt"></i> ${property.location}</p>
+                        <div class="property-price">
+                            <span class="price">₹${property.price.toLocaleString()}</span>
+                            <span class="period">/month</span>
+                        </div>
+                        <button class="btn-secondary book-btn" onclick="handleBooking('${property._id}')">Book Property</button>
+                    </div>
+                </div>
+            `).join('')
+                    : '<div class="no-properties">No budget rooms available.</div>';
+
+            document.getElementById('budget-rooms-section').style.display = 'block';
+            document.getElementById('map-view-section').style.display = 'none';
+            document.querySelector('.properties-container').style.display = 'none';
+        }
+
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

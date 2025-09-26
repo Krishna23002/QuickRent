@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickRent</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <h1>QuickRent</h1>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="browse.html">Browse Property</a>
+            <a href="list.html">List Property</a>
+            <a href="about.html">About</a>
+            <div class="auth-btn">
+                <button onclick="goToLoginPage('login')" class="primary-btn login">Login</button>
+                <button onclick="goToLoginPage('signup')" class="primary-btn signUp">Sign Up</button>
+            </div>
+            <div class="user-menu" style="display: none;">
+                <div class="dropdown">
+                    <button class="dropdown-btn">
+                        <i class="fas fa-user"></i> <span id="username"></span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="profile.html" id="profile-link">Profile</a>
+                        <a href="admin.html" id="admin-link" style="display: none;">Admin Panel</a>
+                        <a href="#" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <section>
+        <h1>Admin Dashboard</h1>
+
+        <!-- Users Management -->
+        <div class="section" id="users-section">
+            <h2>Manage Users</h2>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Company</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Properties Management -->
+        <div class="section" id="properties-section">
+            <h2>Manage Properties</h2>
+            <div class="property-filters">
+                <button class="filter-btn active" onclick="filterProperties('all')">All</button>
+                <button class="filter-btn" onclick="filterProperties('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterProperties('approved')">Approved</button>
+                <button class="filter-btn" onclick="filterProperties('rejected')">Rejected</button>
+            </div>
+            <table id="properties-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Owner</th>
+                        <th>Location</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h3>QuickRent</h3>
+                <p>Find verified homes for students and professionals with ease.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="browse.html">Browse</a></li>
+                    <li><a href="about.html">About</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <ul>
+                    <li><i class="fas fa-envelope"></i> support@quickrent.com</li>
+                    <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Mumbai, India</li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Follow Us</h4>
+                <div class="social-icons">
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="year">2025</span> QuickRent. All rights reserved.</span>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = "http://localhost:4000"; // replace with your backend URL when deployed
+        const token = localStorage.getItem("token");
+
+        // If no token, redirect to login
+        if (!token) {
+            alert("Please log in as admin!");
+            window.location.href = "login.html";
+        }
+
+        // ------------------- USERS -------------------
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                const tbody = document.querySelector("#users-table tbody");
+                tbody.innerHTML = "";
+
+                if (!data.users || data.users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5">No users found</td></tr>`;
+                    return;
+                }
+
+                data.users.forEach(user => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${user.role}</td>
+                <td>${user.company || '-'}</td>
+                <td>
+                    <button class="btn-edit" onclick="editUser('${user._id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteUser('${user._id}')">Delete</button>
+                </td>
+            `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Fetch error:", err);
+                alert("Failed to load users. Are you logged in as admin?");
+            }
+        }
+
+        // ------------------- PROPERTIES -------------------
+        async function loadProperties(statusFilter = 'all') {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/properties`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                const contentType = res.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const bodyText = await res.text();
+                    throw new Error(`Unexpected response (status ${res.status}). Body: ${bodyText.slice(0, 200)}`);
+                }
+
+                const data = await res.json();
+
+                const tbody = document.querySelector("#properties-table tbody");
+                tbody.innerHTML = "";
+
+                let filteredProperties = data.properties || [];
+                if (statusFilter !== 'all') {
+                    filteredProperties = filteredProperties.filter(prop => prop.status === statusFilter);
+                }
+
+                if (filteredProperties.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6">No properties found</td></tr>`;
+                    return;
+                }
+
+                filteredProperties.forEach(property => {
+                    const status = property.status;
+                    const statusBadge = getStatusBadge(status);
+                    const actionButtons = getActionButtons(property, status);
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                <td>${property.title}</td>
+                <td>${property.ownerName || '-'}</td>
+                <td>${property.location}</td>
+                <td>₹${property.price.toLocaleString()}</td>
+                <td>${statusBadge}</td>
+                <td>${actionButtons}</td>
+            `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load properties");
+            }
+        }
+
+        // ------------------- STATUS BADGES -------------------
+        function getStatusBadge(status) {
+            const badges = {
+                'pending': '<span class="status-badge pending">Pending</span>',
+                'approved': '<span class="status-badge approved">Approved</span>',
+                'rejected': '<span class="status-badge rejected">Rejected</span>'
+            };
+            return badges[status] || status;
+        }
+
+        // ------------------- ACTION BUTTONS -------------------
+        function getActionButtons(property, status) {
+            if (status === 'pending') {
+                return `
+            <button class="btn-approve" onclick="updatePropertyStatus('${property._id}', 'approve')">Approve</button>
+            <button class="btn-reject" onclick="updatePropertyStatus('${property._id}', 'reject')">Reject</button>
+        `;
+            } else if (status === 'approved') {
+                return `<button class="btn-reject" onclick="updatePropertyStatus('${property._id}', 'reject')">Reject</button>`;
+            } else if (status === 'rejected') {
+                return `<button class="btn-approve" onclick="updatePropertyStatus('${property._id}', 'approve')">Approve</button>`;
+            }
+            return '';
+        }
+
+        // ------------------- APPROVE / REJECT -------------------
+        async function updatePropertyStatus(id, action) {
+            if (!confirm(`${action === 'approve' ? 'Approve' : 'Reject'} this property?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/properties/${id}/${action}`, {
+                    method: 'PUT',
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(data.message);
+                    loadProperties(); // reload table
+                } else {
+                    alert(data.message || "Failed to update property");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error updating property");
+            }
+        }
+
+        // ------------------- FILTER -------------------
+        function filterProperties(status) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            loadProperties(status);
+        }
+
+        // ------------------- PLACEHOLDER FUNCTIONS -------------------
+        function editUser(id) { alert("Edit user: " + id); }
+        function deleteUser(id) { alert("Delete user: " + id); }
+        function editProperty(id) { alert("Edit property: " + id); }
+        function deleteProperty(id) { alert("Delete property: " + id); }
+
+        // ------------------- INITIAL LOAD -------------------
+        window.addEventListener("DOMContentLoaded", () => {
+            loadUsers();
+            loadProperties();
+        });
+    </script>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>
