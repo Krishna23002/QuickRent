@@ -78,7 +78,8 @@ function updateUserMenu(user) {
     const userMenu = document.querySelector(".user-menu");
     if (userMenu) userMenu.style.display = "block";
 
-    document.getElementById("username").textContent = user.name;
+    const usernameEl = document.getElementById("username");
+    if (usernameEl) usernameEl.textContent = user?.name || "User";
 
     const adminLink = document.getElementById("admin-link");
     if (adminLink) {
@@ -120,9 +121,9 @@ async function handleLoginSuccess(data) {
 
     // Redirect user
     if (data.user.email === "admin@quickrent.com" || data.user.isAdmin) {
-        window.location.href = "admin.html"; 
+        window.location.href = "admin.html";
     } else {
-        window.location.href = "profile.html"; 
+        window.location.href = "index.html";
     }
 }
 
@@ -146,14 +147,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!data.user) return;
 
         const user = data.user;
-        document.getElementById("username").textContent = user.name;
+        const usernameEl = document.getElementById("username");
+        if (usernameEl) usernameEl.textContent = user?.name || "User";
 
         if (user.email === "admin@quickrent.com" || user.isAdmin) {
-            document.getElementById("profile-link").style.display = "none";
-            document.getElementById("admin-link").style.display = "block";
+            const profileLink = document.getElementById("profile-link");
+            const adminLink = document.getElementById("admin-link");
+            if (profileLink) profileLink.style.display = "none";
+            if (adminLink) adminLink.style.display = "block";
         } else {
-            document.getElementById("profile-link").style.display = "block";
-            document.getElementById("admin-link").style.display = "none";
+            const profileLink = document.getElementById("profile-link");
+            const adminLink = document.getElementById("admin-link");
+            if (profileLink) profileLink.style.display = "block";
+            if (adminLink) adminLink.style.display = "none";
         }
 
     } catch (err) {
