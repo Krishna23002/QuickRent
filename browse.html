@@ -339,9 +339,9 @@
             container.innerHTML = filteredProperties.map(property => `
         <div class="property-card" data-property-id="${property._id}">
             <div class="property-image">
-                <img src="http://localhost:4000${property.images?.[0] || ''}" 
+                <img src="https://new-eaor.onrender.com${property.images?.[0] || ''}" 
      alt="${property.title}" 
-     onerror="this.src='images/1.avif'">
+     onerror="this.src='uploads/images-1758729208348-875584086.avif'">
 
                 <div class="property-badge">${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</div>
                 <button class="compare-btn" onclick="toggleCompare('${property._id}')">
@@ -506,8 +506,8 @@
             if (properties.length < 2) { alert('Select at least 2 properties to compare.'); return; }
 
             const rows = [];
-            const fields = [
-                { label: 'Preview', render: p => `<img src="https://new-eaor.onrender.com${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='images/1.avif'">` },
+                    const fields = [
+                { label: 'Preview', render: p => `<img src="https://new-eaor.onrender.com${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='uploads/images-1758729208348-875584086.avif'">` },
                 { label: 'Title', render: p => p.title || '' },
                 { label: 'Price (/month)', render: p => `₹${Number(p.price||0).toLocaleString()}` },
                 { label: 'Type', render: p => p.type || '' },
@@ -655,9 +655,9 @@
             document.getElementById('budget-properties-list').innerHTML =
                 budgetProperties.length > 0
                     ? budgetProperties.map(property => `
-                <div class="property-card">
+                    <div class="property-card">
                     <div class="property-image">
-                        <img src="https://new-eaor.onrender.com${property.images?.[0] || ''}" alt="${property.title}" onerror="this.src='images/1.avif'">
+                        <img src="https://new-eaor.onrender.com${property.images?.[0] || ''}" alt="${property.title}" onerror="this.src='uploads/images-1758729208348-875584086.avif'">
                         <div class="property-badge">Budget</div>
                     </div>
                     <div class="property-info">
