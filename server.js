@@ -16,7 +16,7 @@ app.use(express.json());
 const allowedOrigins = [
     'http://127.0.0.1:5501',
     'http://localhost:5500',
-    'https://your-frontend-domain.com'  // for production
+    'https://quickrents.netlify.app'
 ];
 
 // serve uploaded images
