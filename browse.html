@@ -307,7 +307,7 @@
         // Fetch properties from backend
         async function loadProperties() {
             try {
-                const response = await fetch('http://localhost:4000/api/properties');
+                const response = await fetch('https://new-eaor.onrender.com/api/properties');
                 const data = await response.json();
 
                 if (response.ok) {
@@ -507,7 +507,7 @@
 
             const rows = [];
             const fields = [
-                { label: 'Preview', render: p => `<img src="http://localhost:4000${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='images/1.avif'">` },
+                { label: 'Preview', render: p => `<img src="https://new-eaor.onrender.com${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='images/1.avif'">` },
                 { label: 'Title', render: p => p.title || '' },
                 { label: 'Price (/month)', render: p => `₹${Number(p.price||0).toLocaleString()}` },
                 { label: 'Type', render: p => p.type || '' },
@@ -657,7 +657,7 @@
                     ? budgetProperties.map(property => `
                 <div class="property-card">
                     <div class="property-image">
-                        <img src="http://localhost:4000${property.images?.[0] || ''}" alt="${property.title}" onerror="this.src='images/1.avif'">
+                        <img src="https://new-eaor.onrender.com${property.images?.[0] || ''}" alt="${property.title}" onerror="this.src='images/1.avif'">
                         <div class="property-badge">Budget</div>
                     </div>
                     <div class="property-info">
