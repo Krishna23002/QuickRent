@@ -167,8 +167,7 @@
 
                 <!-- Budget Rooms Section -->
                 <div id="budget-rooms-section" class="budget-section" style="display: none;">
-                    <h3 style="padding: 2rem 0;"><i class="fas fa-coins"></i> Budget-Friendly Options (Under
-                        ₹15000/month)</h3>
+                    <h3 style="padding: 2rem 0;"><i class="fas fa-coins"></i> Budget-Friendly Options (Under ₹15000/month)</h3>
                     <div class="properties-grid" id="budget-properties-list">
                         <!-- Budget properties will be loaded here -->
                     </div>
@@ -200,7 +199,7 @@
                         <!-- Properties will be loaded here -->
                     </div>
                 </div>
-
+                
                 <!-- Compare Modal -->
                 <div id="compare-modal" class="modal" style="display:none;">
                     <div class="modal-content compare-content">
@@ -290,7 +289,7 @@
             const q = (params.get('q') || '').trim().toLowerCase();
             if (q) {
                 filteredProperties = allProperties.filter(p => {
-                    const hay = [p.title, p.type, p.address, p.city, p.state, (p.amenities || []).join(' ')].filter(Boolean).join(' ').toLowerCase();
+                    const hay = [p.title, p.type, p.address, p.city, p.state, (p.amenities||[]).join(' ')].filter(Boolean).join(' ').toLowerCase();
                     return hay.includes(q);
                 });
                 // Remove query from URL so refresh shows original properties
@@ -340,11 +339,9 @@
             container.innerHTML = filteredProperties.map(property => `
         <div class="property-card" data-property-id="${property._id}">
             <div class="property-image">
-                ${property.images.map(img =>
-                `<img src="https://new-eaor.onrender.com${img}" 
-          alt="${property.title}" 
-          onerror="this.src='/uploads/fallback.jpg'">`
-            ).join('')}
+                <img src="https://new-eaor.onrender.com${property.images?.[0] || ''}" 
+     alt="${property.title}" 
+      onerror="this.src='/uploads/images-1758729208348-875584086.avif'">
 
                 <div class="property-badge">${property.type.charAt(0).toUpperCase() + property.type.slice(1)}</div>
                 <button class="compare-btn" onclick="toggleCompare('${property._id}')">
@@ -512,7 +509,7 @@
             const fields = [
                 { label: 'Preview', render: p => `<img src="https://new-eaor.onrender.com${p.images?.[0] || ''}" alt="${p.title}" style="width:140px;height:90px;object-fit:cover;border-radius:8px;" onerror="this.src='/uploads/images-1758729208348-875584086.avif'">` },
                 { label: 'Title', render: p => p.title || '' },
-                { label: 'Price (/month)', render: p => `₹${Number(p.price || 0).toLocaleString()}` },
+                { label: 'Price (/month)', render: p => `₹${Number(p.price||0).toLocaleString()}` },
                 { label: 'Type', render: p => p.type || '' },
                 { label: 'Bedrooms', render: p => p.bedrooms ?? '' },
                 { label: 'Bathrooms', render: p => p.bathrooms ?? '' },
@@ -614,7 +611,7 @@
                 const html = `
                     <div style="min-width:180px;">
                         <strong>${p.title}</strong><br/>
-                        ₹${Number(p.price || 0).toLocaleString()}/month<br/>
+                        ₹${Number(p.price||0).toLocaleString()}/month<br/>
                         <a href="property.html?id=${p._id}">View</a>
                     </div>
                 `;
@@ -625,11 +622,11 @@
                 // Optionally filter by distance
                 const toKm = (a, b) => {
                     const R = 6371;
-                    const dLat = (b[0] - a[0]) * Math.PI / 180;
-                    const dLon = (b[1] - a[1]) * Math.PI / 180;
-                    const lat1 = a[0] * Math.PI / 180;
-                    const lat2 = b[0] * Math.PI / 180;
-                    const x = Math.sin(dLat / 2) ** 2 + Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+                    const dLat = (b[0]-a[0]) * Math.PI/180;
+                    const dLon = (b[1]-a[1]) * Math.PI/180;
+                    const lat1 = a[0]*Math.PI/180;
+                    const lat2 = b[0]*Math.PI/180;
+                    const x = Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1) * Math.cos(lat2);
                     return 2 * R * Math.asin(Math.sqrt(x));
                 };
 
@@ -653,7 +650,7 @@
         // Budget rooms
         function showBudgetRooms() {
             const budgetThreshold = 15000;
-            const budgetProperties = allProperties.filter(p => Number(p.price) < budgetThreshold).sort((a, b) => Number(a.price) - Number(b.price));
+            const budgetProperties = allProperties.filter(p => Number(p.price) < budgetThreshold).sort((a,b)=>Number(a.price)-Number(b.price));
 
             document.getElementById('budget-properties-list').innerHTML =
                 budgetProperties.length > 0
