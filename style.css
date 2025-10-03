@@ -1623,6 +1623,7 @@ table tr:hover {
 
   .hero {
     padding: 50px 20px 0;
+    height: 100vh;
   }
 
   .hero-content h1 {
